@@ -1,2 +1,2 @@
 # DSA_codes
-Codes for dsa practice questions
+Codes for DSA practice questions from Leetcode and Gfg
