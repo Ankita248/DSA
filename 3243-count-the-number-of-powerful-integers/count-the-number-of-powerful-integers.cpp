@@ -1,53 +1,64 @@
-int64_t memoization[17][2];
-
+#define ll long long
 class Solution {
 public:
-    long long countPowerfulIntegers(long long x, int limit, string suffix) {
-        string xStr = to_string(x);
-        int xSize = xStr.size();
-        memset(memoization, -1, sizeof memoization);
-        int indexDifference = xSize - (int)suffix.size();
-
-        if (indexDifference < 0)
-            return 0;
-
-        function<int64_t(int, int)> countRecursive = [&](int index, int tight) -> int64_t {
-            if (index == xSize)
-                return 1;
-
-            int64_t &answer = memoization[index][tight];
-            if (answer != -1)
-                return answer;
-
-            answer = 0;
-
-            if (index >= indexDifference) {
-                int current_digit = suffix[index - indexDifference] - '0';
-                if (current_digit <= limit) {
-                    if (tight && current_digit <= xStr[index] - '0') {
-                        answer += countRecursive(index + 1, current_digit == xStr[index] - '0');
-                    } else if (!tight) {
-                        answer += countRecursive(index + 1, 0);
-                    }
-                }
-            } else if (tight) {
-                int digit = xStr[index] - '0';
-                for (int current_digit = 0; current_digit <= min(limit, digit); ++current_digit) {
-                    answer += countRecursive(index + 1, current_digit == digit);
-                }
-            } else {
-                for (int current_digit = 0; current_digit <= limit; ++current_digit) {
-                    answer += countRecursive(index + 1, 0);
-                }
-            }
-
-            return answer;
-        };
-
-        return countRecursive(0, 1);
+    ll flrdiv(ll a,ll b){
+        ll div = a/b;
+        if(a%b!=0 && a<0) div--;
+        return div;
+    }
+    ll power(ll base,ll exp){
+        ll ans = 1;
+        while(exp>0){
+            if(exp&1) ans = ans*base;
+            base = base*base;
+            exp/=2;
+        }
+        return ans;
     }
 
-    long long numberOfPowerfulInt(long long start, long long finish, int limit, string suffix) {
-        return countPowerfulIntegers(finish, limit, suffix) - countPowerfulIntegers(start - 1, limit, suffix);
+    ll f(ll x,ll lim){
+        if(x<0) return 0;
+        string s = to_string(x);
+        ll n = s.size();
+        ll cnt = 0;
+        //numbers having fewer than n digits.
+        for(int i = 1;i<n;i++){
+            if(i==1) cnt+= (lim+1);
+            else cnt+= (ll)lim*power(lim+1,i-1);
+        }
+
+        ll curcnt = 0;
+        bool ok = true;
+        for(int i =0;i<n;i++){
+            ll dig = s[i]-'0';
+            ll  sd = (i==0 && n>1)?1:0;
+            for(int j = sd;j<dig;j++){
+                if(j>lim) break;
+                curcnt+=power(lim+1,n-i-1);
+            }
+            if(dig>lim){
+                ok = false;
+                break;
+            }
+        }
+        if(ok) curcnt++;
+        return  cnt + curcnt;
+    }
+ 
+ 
+    long long numberOfPowerfulInt(long long start, long long finish, int limit, string s) {
+        ll l = s.size();
+        ll p = stoll(s);
+        ll tl = 1;
+
+        for(ll i =0;i<l;i++) tl*=10;
+
+        if(finish<p) return 0;
+        ll pmn = -flrdiv(-start+p,tl);
+        ll pmx = flrdiv(finish-p,tl);
+
+        if(pmn>pmx) return 0;
+        
+        return f(pmx,limit)- f(pmn-1,limit);
     }
 };
